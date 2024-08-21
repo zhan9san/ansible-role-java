@@ -1,0 +1,25 @@
+---
+
+- name: Determine OS and Architecture
+  set_fact:
+    os_arch: "{{ ansible_facts['system'] }}_{{ ansible_facts['architecture'] if ansible_facts['architecture'] else 'x86_64' }}"
+
+- name: Print OS and Architecture
+  debug:
+    msg: "The OS and Architecture is {{ os_arch }}"
+
+- name: Set download URL
+  set_fact:
+    download_url: "{{ download_urls[os_arch] }}"
+  when: os_arch in download_urls
+
+- name: Print download URL
+  debug:
+    msg: "The download URL is {{ download_url }}"
+  when: download_url is defined and download_url != ''
+
+- name: Get JDK
+  ansible.builtin.unarchive:
+    src: "{{ download_url }}"
+    dest: /opt
+    remote_src: yes
