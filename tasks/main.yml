@@ -2,16 +2,16 @@
 
 - name: Determine OS and Architecture
   ansible.builtin.set_fact:
-    os_arch: "{{ ansible_facts['system'] }}_{{ ansible_facts['architecture'] if ansible_facts['architecture'] else 'x86_64' }}"
+    os_arch_version: "{{ ansible_facts['system'] }}_{{ ansible_facts['architecture'] if ansible_facts['architecture'] else 'x86_64' }}_{{ jdk_vesion_safe }}"
 
 - name: Print OS and Architecture
   ansible.builtin.debug:
-    msg: "The OS and Architecture is {{ os_arch }}"
+    msg: "The OS and Architecture is {{ os_arch_version }}"
 
 - name: Set download URL
   ansible.builtin.set_fact:
-    download_url: "{{ download_urls[os_arch] }}"
-  when: os_arch in download_urls
+    download_url: "{{ download_urls[os_arch_version] }}"
+  when: os_arch_version in download_urls
 
 - name: Print download URL
   ansible.builtin.debug:
