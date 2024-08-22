@@ -18,8 +18,16 @@
     msg: "The download URL is {{ download_url }}"
   when: download_url is defined and download_url != ''
 
+- name: Set destination directory based on OS
+  ansible.builtin.set_fact:
+    jdk_dest: "{{ (ansible_facts.system == 'Linux') | ternary('/opt', ansible_facts.user_dir) }}"
+
+- name: Print jdk_dest
+  ansible.builtin.debug:
+    msg: "The JDK destination dir is {{ jdk_dest }}"
+
 - name: Get JDK
   ansible.builtin.unarchive:
     src: "{{ download_url }}"
-    dest: /opt
+    dest: "{{ jdk_dest }}"
     remote_src: true
