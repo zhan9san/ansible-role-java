@@ -26,8 +26,18 @@
   ansible.builtin.debug:
     msg: "The JDK destination dir is {{ jdk_dest }}"
 
+# set JDK HOME to Get JDK's creates to ensure it is idempotent
+- name: Set the JDK HOME
+  ansible.builtin.set_fact:
+    jdk_home: "{{ (jdk_dest, (ansible_facts.system == 'Darwin') | ternary('jdk-' + jdk_version + '.jdk', 'jdk-' + jdk_version)) | path_join }}"
+
+- name: Print JDK HOME
+  ansible.builtin.debug:
+    msg: "The JDK HOME is {{ jdk_home }}"
+
 - name: Get JDK
   ansible.builtin.unarchive:
     src: "{{ download_url }}"
     dest: "{{ jdk_dest }}"
     remote_src: true
+    creates: "{{ jdk_home }}"
