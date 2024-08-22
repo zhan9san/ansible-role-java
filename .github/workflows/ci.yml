@@ -47,12 +47,18 @@ jobs:
           MOLECULE_DISTRO: ${{ matrix.distro }}
 
   molecule-mac:
+    name: ${{ matrix.os }}-${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os:
           - macos-13
           - macos-14
+        include:
+          - os: macos-13
+            arch: intel
+          - os: macos-14
+            arch: arm
     steps:
       - name: Check out the codebase.
         uses: actions/checkout@v4
