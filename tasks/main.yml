@@ -20,7 +20,7 @@
 
 - name: Set destination directory based on OS
   ansible.builtin.set_fact:
-    jdk_dest: "{{ (ansible_facts.system == 'Linux') | ternary('/opt', ansible_facts.user_dir) }}"
+    jdk_dest: "{{ (ansible_facts.system == 'Linux' and not install_jdk_in_user_dir_on_linux) | ternary('/opt', ansible_facts.user_dir) }}"
 
 - name: Print jdk_dest
   ansible.builtin.debug:
