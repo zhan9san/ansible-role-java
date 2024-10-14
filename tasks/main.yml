@@ -6,20 +6,16 @@
       - The download URL is {{ download_url }}
       - The JDK destination dir is {{ jdk_dest }}
       - The JDK HOME is {{ jdk_home }}
+      - The JDK file name is {{ jdk_file_name }}
+      - The JDK file temp path is {{ jdk_file_temp_path }}
+      - The JDK bin path is {{ java_bin_path }}
 
-- name: Get JDK
-  ansible.builtin.unarchive:
-    src: "{{ download_url }}"
-    dest: "{{ jdk_dest }}"
-    remote_src: true
-    creates: "{{ jdk_home }}"
+- name: Install JDK on Windows
+  ansible.builtin.include_tasks:
+    file: windows.yml
+  when: ansible_facts.system == "Win32NT"
 
-- name: Verify JDK installation
-  ansible.builtin.command:
-    cmd: "{{ [jdk_home, java_bin_relative_path] | path_join }} --version"
-  register: java_version
-  changed_when: java_version.rc != 0
-
-- name: Print JDK version
-  ansible.builtin.debug:
-    msg: "JDK version output: {{ java_version.stdout }}"
+- name: Install JDK on Linux or Darwin
+  ansible.builtin.include_tasks:
+    file: unix.yml
+  when: ansible_facts.system == "Linux" or ansible_facts.system == "Darwin"
