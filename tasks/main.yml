@@ -1,39 +1,11 @@
 ---
-
-- name: Determine OS and Architecture
-  ansible.builtin.set_fact:
-    os_arch_version: "{{ ansible_facts['system'] }}_{{ ansible_facts['architecture'] if ansible_facts['architecture'] else 'x86_64' }}_{{ jdk_vesion_safe }}"
-
 - name: Print OS and Architecture
   ansible.builtin.debug:
-    msg: "The OS and Architecture is {{ os_arch_version }}"
-
-- name: Set download URL
-  ansible.builtin.set_fact:
-    download_url: "{{ download_urls[os_arch_version] }}"
-  when: os_arch_version in download_urls
-
-- name: Print download URL
-  ansible.builtin.debug:
-    msg: "The download URL is {{ download_url }}"
-  when: download_url is defined and download_url != ''
-
-- name: Set destination directory based on OS
-  ansible.builtin.set_fact:
-    jdk_dest: "{{ (ansible_facts.system == 'Linux' and not install_jdk_in_user_dir_on_linux) | ternary('/opt', ansible_facts.user_dir) }}"
-
-- name: Print jdk_dest
-  ansible.builtin.debug:
-    msg: "The JDK destination dir is {{ jdk_dest }}"
-
-# set JDK HOME to Get JDK's creates to ensure it is idempotent
-- name: Set the JDK HOME
-  ansible.builtin.set_fact:
-    jdk_home: "{{ (jdk_dest, (ansible_facts.system == 'Darwin') | ternary('jdk-' + jdk_version + '.jdk', 'jdk-' + jdk_version)) | path_join }}"
-
-- name: Print JDK HOME
-  ansible.builtin.debug:
-    msg: "The JDK HOME is {{ jdk_home }}"
+    msg:
+      - The OS and Architecture is {{ os_arch_version }}
+      - The download URL is {{ download_url }}
+      - The JDK destination dir is {{ jdk_dest }}
+      - The JDK HOME is {{ jdk_home }}
 
 - name: Get JDK
   ansible.builtin.unarchive:
@@ -41,3 +13,13 @@
     dest: "{{ jdk_dest }}"
     remote_src: true
     creates: "{{ jdk_home }}"
+
+- name: Verify JDK installation
+  ansible.builtin.command:
+    cmd: "{{ [jdk_home, java_bin_relative_path] | path_join }} --version"
+  register: java_version
+  changed_when: java_version.rc != 0
+
+- name: Print JDK version
+  ansible.builtin.debug:
+    msg: "JDK version output: {{ java_version.stdout }}"

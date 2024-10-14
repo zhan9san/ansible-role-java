@@ -1,3 +1,4 @@
+---
 galaxy_info:
   role_name: java
   author: zhan9san
@@ -5,7 +6,7 @@ galaxy_info:
   issue_tracker_url: https://github.com/zhan9san/ansible-role-java/issues
   license: MIT
 
-  min_ansible_version: '2.4'
+  min_ansible_version: "2.4"
 
   #
   # Provide a list of supported platforms, and for each platform a list of versions.
