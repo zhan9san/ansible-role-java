@@ -5,7 +5,7 @@ jdk_vesion_safe: "{{ jdk_version | replace('.', '_') }}"
 # win: "ansible_architecture": "64-bit", "ansible_architecture2": "x86_64"
 # linux/mac: "ansible_architecture": "x86_64" no `ansible_architecture2`
 arch: |-
-  {%- if ansible_facts['system'] == 'Windows' -%}
+  {%- if ansible_facts['system'] == 'Win32NT' -%}
   {{ ansible_facts['architecture2'] }}
   {%- else -%}
   {{ ansible_facts['architecture'] }}
@@ -44,7 +44,7 @@ jdk_home: |-
 java_bin_relative_path: |-
   {% if ansible_facts['system'] == 'Darwin' -%}
   Contents/Home/bin/java
-  {%- elif ansible_facts['os_family'] == 'Windows' -%}
+  {%- elif ansible_facts['system'] == 'Win32NT' -%}
   bin\\java
   {%- else -%}
   bin/java
