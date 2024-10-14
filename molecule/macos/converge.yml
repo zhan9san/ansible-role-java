@@ -3,6 +3,6 @@
   hosts: all
   gather_facts: true
   tasks:
-    - name: "Include zhan9san.java"
+    - name: Include zhan9san.java
       ansible.builtin.include_role:
-        name: "zhan9san.java"
+        name: zhan9san.java

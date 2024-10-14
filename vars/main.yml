@@ -1,13 +1,41 @@
 ---
 jdk_vesion_safe: "{{ jdk_version | replace('.', '_') }}"
 
-download_urls:
-  Win32NT_x86_64_17_0_2: "https://download.java.net/java/GA/jdk17.0.1/2a2082e5a09d4267845be086888add4f/12/GPL/openjdk-17.0.1_windows-x64_bin.zip"
-  Darwin_arm64_17_0_2: "https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_macos-aarch64_bin.tar.gz"
-  Darwin_x86_64_17_0_2: "https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_macos-x64_bin.tar.gz"
-  Linux_x86_64_17_0_2: "https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz"
+os_arch_version: "{{ ansible_facts['system'] }}_{{ ansible_facts['architecture'] if ansible_facts['architecture'] else 'x86_64' }}_{{ jdk_vesion_safe }}"
 
-  Win32NT_x86_64_21_0_2: "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_windows-x64_bin.zip"
-  Darwin_arm64_21_0_2: "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-aarch64_bin.tar.gz"
-  Darwin_x86_64_21_0_2: "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-x64_bin.tar.gz"
-  Linux_x86_64_21_0_2: "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz"
+download_urls:
+  Win32NT_x86_64_17_0_2: https://download.java.net/java/GA/jdk17.0.1/2a2082e5a09d4267845be086888add4f/12/GPL/openjdk-17.0.1_windows-x64_bin.zip
+  Darwin_arm64_17_0_2: https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_macos-aarch64_bin.tar.gz
+  Darwin_x86_64_17_0_2: https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_macos-x64_bin.tar.gz
+  Linux_x86_64_17_0_2: https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz
+
+  Win32NT_x86_64_21_0_2: https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_windows-x64_bin.zip
+  Darwin_arm64_21_0_2: https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-aarch64_bin.tar.gz
+  Darwin_x86_64_21_0_2: https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-x64_bin.tar.gz
+  Linux_x86_64_21_0_2: https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz
+
+download_url: "{{ download_urls[os_arch_version] }}"
+
+jdk_dest: |-
+  {%- if ansible_facts['system'] == 'Linux' and not install_jdk_in_user_dir_on_linux -%}
+  /opt
+  {%- else -%}
+  {{ ansible_facts['user_dir'] }}
+  {%- endif %}
+
+jdk_home: |-
+  {% set jdk_directory = 'jdk-' + jdk_version -%}
+  {%- if ansible_facts['system'] == 'Darwin' -%}
+  {{ [jdk_dest, jdk_directory + '.jdk'] | path_join }}
+  {%- else -%}
+  {{ [jdk_dest, jdk_directory] | path_join }}
+  {%- endif %}
+
+java_bin_relative_path: |-
+  {% if ansible_facts['system'] == 'Darwin' -%}
+  Contents/Home/bin/java
+  {%- elif ansible_facts['os_family'] == 'Windows' -%}
+  bin\\java
+  {%- else -%}
+  bin/java
+  {%- endif %}
