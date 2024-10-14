@@ -1,0 +1,22 @@
+---
+- name: Get JDK on Windows
+  ansible.windows.win_get_url:
+    url: "{{ download_url }}"
+    dest: "{{ jdk_file_temp_path }}"
+    force: false
+
+- name: Unzip JDK on Windows
+  community.windows.win_unzip:
+    src: "{{ jdk_file_temp_path }}"
+    dest: "{{ jdk_dest }}"
+    creates: "{{ jdk_home }}"
+
+- name: Verify JDK installation on Windows
+  ansible.windows.win_command:
+    cmd: "{{ java_bin_path }} --version"
+  register: java_version
+  changed_when: java_version.rc != 0
+
+- name: Print JDK version
+  ansible.builtin.debug:
+    msg: "JDK version output: {{ java_version.stdout }}"

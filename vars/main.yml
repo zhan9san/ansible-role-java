@@ -5,7 +5,7 @@ jdk_vesion_safe: "{{ jdk_version | replace('.', '_') }}"
 # win: "ansible_architecture": "64-bit", "ansible_architecture2": "x86_64"
 # linux/mac: "ansible_architecture": "x86_64" no `ansible_architecture2`
 arch: |-
-  {%- if ansible_facts['system'] == 'Win32NT' -%}
+  {% if ansible_facts['system'] == 'Win32NT' -%}
   {{ ansible_facts['architecture2'] }}
   {%- else -%}
   {{ ansible_facts['architecture'] }}
@@ -25,9 +25,11 @@ download_urls:
   Linux_x86_64_21_0_2: https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz
 
 download_url: "{{ download_urls[os_arch_version] }}"
+jdk_file_name: "{{ download_url | basename }}"
+jdk_file_temp_path: "%TEMP%\\{{ jdk_file_name }}"
 
 jdk_dest: |-
-  {%- if ansible_facts['system'] == 'Linux' and not install_jdk_in_user_dir_on_linux -%}
+  {% if ansible_facts['system'] == 'Linux' and not install_jdk_in_user_dir_on_linux -%}
   /opt
   {%- else -%}
   {{ ansible_facts['user_dir'] }}
@@ -37,15 +39,24 @@ jdk_home: |-
   {% set jdk_directory = 'jdk-' + jdk_version -%}
   {%- if ansible_facts['system'] == 'Darwin' -%}
   {{ [jdk_dest, jdk_directory + '.jdk'] | path_join }}
-  {%- else -%}
+  {%- elif ansible_facts['system'] == 'Linux' -%}
   {{ [jdk_dest, jdk_directory] | path_join }}
+  {%- elif ansible_facts['system'] == 'Win32NT' -%}
+  {{ jdk_dest }}\{{ jdk_directory }}
   {%- endif %}
 
 java_bin_relative_path: |-
   {% if ansible_facts['system'] == 'Darwin' -%}
   Contents/Home/bin/java
   {%- elif ansible_facts['system'] == 'Win32NT' -%}
-  bin\\java
+  bin\java
   {%- else -%}
   bin/java
+  {%- endif %}
+
+java_bin_path: |-
+  {% if ansible_facts['system'] == 'Win32NT' -%}
+  {{ jdk_home }}\{{ java_bin_relative_path }}
+  {%- else -%}
+  {{ jdk_home }}/{{ java_bin_relative_path }}
   {%- endif %}

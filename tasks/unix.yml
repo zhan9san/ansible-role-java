@@ -1,0 +1,17 @@
+---
+- name: Get JDK for Linux or Darwin
+  ansible.builtin.unarchive:
+    src: "{{ download_url }}"
+    dest: "{{ jdk_dest }}"
+    remote_src: true
+    creates: "{{ jdk_home }}"
+
+- name: Verify JDK installation on Linux or Darwin
+  ansible.builtin.command:
+    cmd: "{{ java_bin_path }} --version"
+  register: java_version
+  changed_when: java_version.rc != 0
+
+- name: Print JDK version
+  ansible.builtin.debug:
+    msg: "JDK version output: {{ java_version.stdout }}"

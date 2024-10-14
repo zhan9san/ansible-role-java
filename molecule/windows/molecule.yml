@@ -1,0 +1,15 @@
+---
+driver:
+  name: default
+platforms:
+  - name: instance
+provisioner:
+  name: ansible
+  inventory:
+    hosts:
+      all:
+        hosts:
+          instance:
+            ansible_user: runneradmin
+            ansible_host: RUNNER_IP
+            ansible_shell_type: cmd
