@@ -1,7 +1,16 @@
 ---
 jdk_vesion_safe: "{{ jdk_version | replace('.', '_') }}"
 
-os_arch_version: "{{ ansible_facts['system'] }}_{{ ansible_facts['architecture'] if ansible_facts['architecture'] else 'x86_64' }}_{{ jdk_vesion_safe }}"
+# e.g.
+# win: "ansible_architecture": "64-bit", "ansible_architecture2": "x86_64"
+# linux/mac: "ansible_architecture": "x86_64" no `ansible_architecture2`
+arch: |-
+  {%- if ansible_facts['system'] == 'Windows' -%}
+  {{ ansible_facts['architecture2'] }}
+  {%- else -%}
+  {{ ansible_facts['architecture'] }}
+  {%- endif %}
+os_arch_version: "{{ ansible_facts['system'] }}_{{ arch }}_{{ jdk_vesion_safe }}"
 
 # https://jdk.java.net/archive/
 download_urls:
