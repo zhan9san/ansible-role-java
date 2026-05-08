@@ -1,10 +1,46 @@
 ---
-- name: Get JDK for Linux or Darwin
+- name: Get JDK for Linux
   ansible.builtin.unarchive:
     src: "{{ download_url }}"
     dest: "{{ jdk_dest }}"
     remote_src: true
-    creates: "{{ jdk_home }}"
+    creates: "{{ jdk_home }}"  # skip entire task if jdk_home already exists
+  when: ansible_facts['system'] == 'Linux'
+
+# Darwin ships BSD tar; ansible.builtin.unarchive requires GNU tar and fails with
+# "GNU tar required". Work around by splitting into download + extract + cleanup.
+- name: Install JDK for Darwin
+  when: ansible_facts['system'] == 'Darwin'
+  block:
+    - name: Check if JDK already installed
+      ansible.builtin.stat:
+        path: "{{ jdk_home }}"
+      register: jdk_stat
+
+    - name: Download JDK for Darwin
+      ansible.builtin.get_url:
+        url: "{{ download_url }}"
+        dest: "{{ jdk_dest }}/{{ jdk_file_name }}"
+        mode: "0644"
+      when: not jdk_stat.stat.exists
+
+    - name: Extract JDK for Darwin
+      ansible.builtin.command:
+        argv:
+          - tar
+          - xzf
+          - "{{ jdk_dest }}/{{ jdk_file_name }}"
+          - -C
+          - "{{ jdk_dest }}"
+      # command module has no idempotency of its own; skip if jdk_home already exists
+      changed_when: true
+      when: not jdk_stat.stat.exists
+
+    - name: Remove JDK archive for Darwin
+      ansible.builtin.file:
+        path: "{{ jdk_dest }}/{{ jdk_file_name }}"
+        state: absent
+      when: not jdk_stat.stat.exists
 
 - name: Verify JDK installation on Linux or Darwin
   ansible.builtin.command:
